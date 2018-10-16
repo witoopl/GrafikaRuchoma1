@@ -14,10 +14,10 @@ namespace labolatoria1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D background, numbers, question;
-        List<GameSurface> listOfNumbers = new List<GameSurface>();
-        List<GameSurface> questionSufraceList = new List<GameSurface>();
-        GameSurface defaultMarket;
-        PointerStateGamer virtualMouse = new PointerStateGamer();
+        List<AreaOfNumbers> listOfNumbers = new List<AreaOfNumbers>();
+        List<AreaOfNumbers> questionSufraceList = new List<AreaOfNumbers>();
+        AreaOfNumbers defaultMarket;
+        MousePointerInGame virtualMouse = new MousePointerInGame();
         int fokin = 0;
         bool wasPressed = true;
 
@@ -64,7 +64,7 @@ namespace labolatoria1
                     Color[] data = new Color[singleNumber.Width * singleNumber.Height];
                     numbers.GetData(0, singleNumber, data, 0, data.Length);
                     singleNumberTexture.SetData(data);
-                    listOfNumbers.Add(new GameSurface(singleNumberTexture, new Vector2(0, 0),new Vector2(40,40)));
+                    listOfNumbers.Add(new AreaOfNumbers(singleNumberTexture, new Vector2(0, 0),new Vector2(40,40)));
                 }
 
             }
@@ -80,9 +80,9 @@ namespace labolatoria1
             for (int i = 200; i < 50 * 10 + 200; i += 50)
                 for (int j = 50; j < 50 * 10 + 50; j += 50)
                 {
-                    questionSufraceList.Add(new GameSurface(question, new Vector2(i,j), new Vector2(50,50)));
+                    questionSufraceList.Add(new AreaOfNumbers(question, new Vector2(i,j), new Vector2(50,50)));
                 }
-            defaultMarket = new GameSurface(question, new Vector2(20, 20), new Vector2(80, 80));
+            defaultMarket = new AreaOfNumbers(question, new Vector2(20, 20), new Vector2(80, 80));
 
             virtualMouse.objectTexture = question;
         }
@@ -113,12 +113,17 @@ namespace labolatoria1
             virtualMouse.position = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
+                ///<summary>
+                ///Tutaj sprawdzamy czy myszka jest nad polem wyboru liczny czy nad polem gry
+                ///</summary>
                     foreach (var number in listOfNumbers)
                         if (number.IsMouseOver(virtualMouse))
                             virtualMouse.objectTexture = number.objectTexture;
                     foreach (var question in questionSufraceList)
                         if (question.IsMouseOver(virtualMouse))
                             question.objectTexture = virtualMouse.objectTexture;
+                if (defaultMarket.IsMouseOver(virtualMouse))
+                    virtualMouse.objectTexture = defaultMarket.objectTexture;
             }
             if (Mouse.GetState().LeftButton == ButtonState.Pressed && !wasPressed)
             {
@@ -148,13 +153,33 @@ namespace labolatoria1
             {
                 spriteBatch.Draw(number.objectTexture,
                     new Rectangle((int)number.position.X, (int)number.position.Y, (int)number.Size.X, (int)number.Size.Y),
-                    null, Color.White,number.Rotation,new Vector2(0,0),SpriteEffects.None,0);
+                    null, Color.White,number.Rotation,
+                    new Vector2(0,0),SpriteEffects.None,0);
                 fokin++;
             }
+
+
+            ///<summary>
+            ///W tym miejscu występuje rysowanie planszy. Warte zauważenia jest to że "center of ration" przesuwa nam obrazek o daną wartość podczas rysowania tak żeby ustawić jego środek. 
+            ///Działa to zarówno z przeciążeniem z Rectanle jak i Vectorem2D
+            /// </summary>
+            ///
             foreach (var area in questionSufraceList)
             {
-                spriteBatch.Draw(area.objectTexture, new Rectangle((int)area.position.X, (int)area.position.Y, (int)area.Size.X, (int)area.Size.Y), null, Color.White, area.Rotation, new Vector2(area.Size.X, area.Size.Y), SpriteEffects.None, 0);
+                spriteBatch.Draw(area.objectTexture,
+                    new Rectangle((int)area.position.X+(int)area.Size.X/2, (int)area.position.Y+ (int)area.Size.Y/2, (int)area.Size.X, (int)area.Size.Y),
+                    null, Color.White, area.Rotation,
+                    new Vector2(area.Size.X, area.Size.Y), SpriteEffects.None, 0);
             }
+
+            //foreach (var area in questionSufraceList)
+            //{
+            //    spriteBatch.Draw(area.objectTexture,
+            //        new Vector2(area.position.X + area.Size.X / 2, area.position.Y + area.Size.Y / 2),
+            //        null, Color.White, area.Rotation,
+            //        new Vector2(area.Size.X, area.Size.Y), 0.5f, SpriteEffects.None, 0);
+            //}
+            
 
             spriteBatch.End();
 

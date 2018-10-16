@@ -9,9 +9,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace labolatoria1.GameObjects
 {
-    public class GameSurface : IUniversalGameObject
+    public class AreaOfNumbers : IUniversalGameObject
     {
-        public GameSurface(Texture2D objectTexture,  Vector2 position, Vector2 size, float rotation=0)
+        public AreaOfNumbers(Texture2D objectTexture,  Vector2 position, Vector2 size, float rotation=0)
         {
             this.objectTexture = objectTexture;
             this.Rotation = rotation;

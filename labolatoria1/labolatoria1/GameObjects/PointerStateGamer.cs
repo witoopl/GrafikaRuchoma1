@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace labolatoria1.GameObjects
 {
-    public class PointerStateGamer : IUniversalGameObject
+    public class MousePointerInGame : IUniversalGameObject
     {
         public Texture2D objectTexture { get; set; }
         public Vector2 position { get; set; }
