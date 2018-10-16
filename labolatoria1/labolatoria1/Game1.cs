@@ -16,8 +16,10 @@ namespace labolatoria1
         Texture2D background, numbers, question;
         List<GameSurface> listOfNumbers = new List<GameSurface>();
         List<GameSurface> questionSufraceList = new List<GameSurface>();
+        GameSurface defaultMarket;
         PointerStateGamer virtualMouse = new PointerStateGamer();
         int fokin = 0;
+        bool wasPressed = true;
 
         public Game1()
         {
@@ -40,6 +42,7 @@ namespace labolatoria1
 
             base.Initialize();
             IsMouseVisible = true;
+
         }
 
         /// <summary>
@@ -61,15 +64,14 @@ namespace labolatoria1
                     Color[] data = new Color[singleNumber.Width * singleNumber.Height];
                     numbers.GetData(0, singleNumber, data, 0, data.Length);
                     singleNumberTexture.SetData(data);
-                    listOfNumbers.Add(new GameSurface(singleNumberTexture, 0, 0));
+                    listOfNumbers.Add(new GameSurface(singleNumberTexture, new Vector2(0, 0),new Vector2(40,40)));
                 }
 
             }
-            var count = 100;
+            var count = 120;
             foreach (var number in listOfNumbers)
             {
-                number.positionY = count;
-                number.positionX = 20;
+                number.position = new Vector2(20,count);
                 count += 30;
             }
 
@@ -78,8 +80,9 @@ namespace labolatoria1
             for (int i = 200; i < 50 * 10 + 200; i += 50)
                 for (int j = 50; j < 50 * 10 + 50; j += 50)
                 {
-                    questionSufraceList.Add(new GameSurface(question, i, j));
+                    questionSufraceList.Add(new GameSurface(question, new Vector2(i,j), new Vector2(50,50)));
                 }
+            defaultMarket = new GameSurface(question, new Vector2(20, 20), new Vector2(80, 80));
 
             virtualMouse.objectTexture = question;
         }
@@ -103,27 +106,29 @@ namespace labolatoria1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if ((GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed) || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 this.Exit();
 
             // TODO: Add your update logic here
-            virtualMouse.positionX = Mouse.GetState().X;
-            virtualMouse.positionY = Mouse.GetState().Y;
+            virtualMouse.position = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
-
-                foreach (var number in listOfNumbers)
-                {
-                    if ((Mouse.GetState().X >= number.positionX) && (Mouse.GetState().X <= number.positionX + 30) && (Mouse.GetState().Y >= number.positionY) && (Mouse.GetState().Y <= number.positionY + 30))
-                        virtualMouse.objectTexture = number.objectTexture;
-
-                }
-
-                foreach (var question in questionSufraceList)
-                    if ((Mouse.GetState().X >= question.positionX) && (Mouse.GetState().X <= question.positionX + 50) && (Mouse.GetState().Y >= question.positionY) && (Mouse.GetState().Y <= question.positionY + 50))
-                        question.objectTexture = virtualMouse.objectTexture;
+                    foreach (var number in listOfNumbers)
+                        if (number.IsMouseOver(virtualMouse))
+                            virtualMouse.objectTexture = number.objectTexture;
+                    foreach (var question in questionSufraceList)
+                        if (question.IsMouseOver(virtualMouse))
+                            question.objectTexture = virtualMouse.objectTexture;
             }
-
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed && !wasPressed)
+            {
+                foreach (var question in questionSufraceList)
+                    if (question.IsMouseOver(virtualMouse) && question.objectTexture == virtualMouse.objectTexture)
+                        question.Rotation += (float)MathHelper.Pi / 2;
+                wasPressed = true;
+            }
+            if (Mouse.GetState().LeftButton == ButtonState.Released)
+                wasPressed = false;
 
             base.Update(gameTime);
         }
@@ -137,16 +142,18 @@ namespace labolatoria1
             GraphicsDevice.Clear(Color.AliceBlue);
             spriteBatch.Begin();
             spriteBatch.Draw(background, Vector2.Zero, Color.White);
-            spriteBatch.Draw(question, new Rectangle(20, 20, 80, 80), Color.White);
+            spriteBatch.Draw(defaultMarket.objectTexture,new Rectangle((int)defaultMarket.position.X,(int)defaultMarket.position.Y,(int)defaultMarket.Size.X,(int)defaultMarket.Size.Y), Color.White);
             fokin = 0;
             foreach (var number in listOfNumbers)
             {
-                spriteBatch.Draw(number.objectTexture, new Rectangle(number.positionX, number.positionY, 30, 30), new Rectangle(0, 0, 100, 100), Color.White);
+                spriteBatch.Draw(number.objectTexture,
+                    new Rectangle((int)number.position.X, (int)number.position.Y, (int)number.Size.X, (int)number.Size.Y),
+                    null, Color.White,number.Rotation,new Vector2(0,0),SpriteEffects.None,0);
                 fokin++;
             }
             foreach (var area in questionSufraceList)
             {
-                spriteBatch.Draw(area.objectTexture, new Rectangle(area.positionX, area.positionY, 50, 50), Color.White);
+                spriteBatch.Draw(area.objectTexture, new Rectangle((int)area.position.X, (int)area.position.Y, (int)area.Size.X, (int)area.Size.Y), null, Color.White, area.Rotation, new Vector2(area.Size.X, area.Size.Y), SpriteEffects.None, 0);
             }
 
             spriteBatch.End();
